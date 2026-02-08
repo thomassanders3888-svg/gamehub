@@ -148,6 +148,25 @@ function unlockGame(game, cost) {
 let selectedPackage = null;
 let stripe = null;
 let cardElement = null;
+let paypalSdkLoaded = false;
+
+// Load PayPal SDK dynamically with user's Client ID
+document.addEventListener('DOMContentLoaded', function() {
+    const config = window.PAYMENT_CONFIG || { demoMode: true };
+    if (!config.demoMode && config.paypalClientId) {
+        const script = document.createElement('script');
+        script.src = `https://www.paypal.com/sdk/js?client-id=${config.paypalClientId}&currency=USD&intent=capture`;
+        script.async = true;
+        script.onload = function() {
+            paypalSdkLoaded = true;
+            console.log('[PayPal] SDK loaded successfully');
+        };
+        script.onerror = function() {
+            console.log('[PayPal] SDK failed to load');
+        };
+        document.head.appendChild(script);
+    }
+});
 
 document.getElementById('buy-coins').addEventListener('click', () => {
     document.getElementById('payment-modal').classList.add('active');
@@ -168,34 +187,35 @@ function initPayment() {
     const config = window.PAYMENT_CONFIG || { demoMode: true };
     const notice = document.getElementById('demo-notice');
     const payButton = document.getElementById('pay-button');
+    const paypalContainer = document.getElementById('paypal-button-container');
     
     if (config.demoMode) {
         // Demo mode - show notice and set up fake payment
         notice.style.display = 'block';
+        payButton.style.display = 'block';
         payButton.textContent = 'Demo Purchase (No Real Charge)';
         payButton.onclick = processDemoPayment;
-        document.getElementById('paypal-button-container').style.display = 'none';
+        paypalContainer.style.display = 'none';
         document.getElementById('stripe-card-element').style.display = 'none';
     } else {
-        // Production mode - set up real payments
+        // Production mode - hide demo notice, show PayPal
         notice.style.display = 'none';
-        payButton.textContent = 'Complete Purchase';
+        payButton.style.display = 'none'; // Hide generic button, PayPal has its own
+        paypalContainer.style.display = 'block';
+        document.getElementById('stripe-card-element').style.display = 'none';
         
-        // Initialize Stripe if key provided
-        if (config.stripePublicKey && config.stripePublicKey.startsWith('pk_')) {
-            initStripe(config.stripePublicKey);
-        } else {
-            document.getElementById('stripe-card-element').style.display = 'none';
-        }
-        
-        // Initialize PayPal if desired
+        // Render PayPal buttons
         if (config.paypalClientId && config.paypalClientId !== 'sb') {
-            renderPayPalButtons();
+            if (typeof paypal !== 'undefined') {
+                renderPayPalButtons();
+            } else {
+                // Fallback if SDK hasn't loaded yet
+                paypalContainer.innerHTML = '<p style="text-align:center;color:#fff;">Loading PayPal... Please wait</p>';
+                setTimeout(initPayment, 1000);
+            }
         } else {
-            document.getElementById('paypal-button-container').style.display = 'none';
+            paypalContainer.innerHTML = '<p style="text-align:center;color:#ef4444;">PayPal not configured</p>';
         }
-        
-        payButton.onclick = processRealPayment;
     }
 }
 
