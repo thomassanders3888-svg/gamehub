@@ -9,6 +9,9 @@ let userData = {
     highScores: {}
 };
 
+let selectedPackage = null;
+let paypalButtonsRendered = false;
+
 // Load data from localStorage
 function loadUserData() {
     const saved = localStorage.getItem('gamehub_data');
@@ -53,7 +56,6 @@ function addCoins(amount) {
 // Show notification
 function showNotification(message, type = 'info') {
     const notif = document.createElement('div');
-    notif.className = `notification ${type}`;
     notif.textContent = message;
     notif.style.cssText = `
         position: fixed;
@@ -107,13 +109,8 @@ function closeGame() {
     const modal = document.getElementById('game-modal');
     const container = document.getElementById('game-container');
     
-    // Stop any running games
-    if (window.gameLoop) {
-        cancelAnimationFrame(window.gameLoop);
-    }
-    if (window.gameInterval) {
-        clearInterval(window.gameInterval);
-    }
+    if (window.gameLoop) cancelAnimationFrame(window.gameLoop);
+    if (window.gameInterval) clearInterval(window.gameInterval);
     
     container.innerHTML = '';
     modal.classList.remove('active');
@@ -145,32 +142,9 @@ function unlockGame(game, cost) {
 }
 
 // Payment Modal
-let selectedPackage = null;
-let stripe = null;
-let cardElement = null;
-let paypalSdkLoaded = false;
-
-// Load PayPal SDK dynamically with user's Client ID
-document.addEventListener('DOMContentLoaded', function() {
-    const config = window.PAYMENT_CONFIG || { demoMode: true };
-    if (!config.demoMode && config.paypalClientId) {
-        const script = document.createElement('script');
-        script.src = `https://www.paypal.com/sdk/js?client-id=${config.paypalClientId}&currency=USD&intent=capture`;
-        script.async = true;
-        script.onload = function() {
-            paypalSdkLoaded = true;
-            console.log('[PayPal] SDK loaded successfully');
-        };
-        script.onerror = function() {
-            console.log('[PayPal] SDK failed to load');
-        };
-        document.head.appendChild(script);
-    }
-});
-
 document.getElementById('buy-coins').addEventListener('click', () => {
     document.getElementById('payment-modal').classList.add('active');
-    initPayment();
+    renderPayPalButtons();
 });
 
 function closePayment() {
@@ -181,90 +155,62 @@ function selectPackage(coins, price) {
     selectedPackage = { coins, price };
     document.querySelectorAll('.package').forEach(p => p.classList.remove('selected'));
     event.currentTarget.classList.add('selected');
-}
-
-function initPayment() {
-    const config = window.PAYMENT_CONFIG || { demoMode: true };
-    const notice = document.getElementById('demo-notice');
-    const payButton = document.getElementById('pay-button');
-    const paypalContainer = document.getElementById('paypal-button-container');
     
-    if (config.demoMode) {
-        // Demo mode - show notice and set up fake payment
-        notice.style.display = 'block';
-        payButton.style.display = 'block';
-        payButton.textContent = 'Demo Purchase (No Real Charge)';
-        payButton.onclick = processDemoPayment;
-        paypalContainer.style.display = 'none';
-        document.getElementById('stripe-card-element').style.display = 'none';
-    } else {
-        // Production mode - hide demo notice, show PayPal
-        notice.style.display = 'none';
-        payButton.style.display = 'none'; // Hide generic button, PayPal has its own
-        paypalContainer.style.display = 'block';
-        document.getElementById('stripe-card-element').style.display = 'none';
-        
-        // Render PayPal buttons
-        if (config.paypalClientId && config.paypalClientId !== 'sb') {
-            if (typeof paypal !== 'undefined') {
-                renderPayPalButtons();
-            } else {
-                // Fallback if SDK hasn't loaded yet
-                paypalContainer.innerHTML = '<p style="text-align:center;color:#fff;">Loading PayPal... Please wait</p>';
-                setTimeout(initPayment, 1000);
-            }
-        } else {
-            paypalContainer.innerHTML = '<p style="text-align:center;color:#ef4444;">PayPal not configured</p>';
-        }
-    }
-}
-
-function initStripe(publicKey) {
-    try {
-        stripe = Stripe(publicKey);
-        const elements = stripe.elements();
-        cardElement = elements.create('card', { style: { base: { color: '#fff', fontSize: '16px' } } });
-        cardElement.mount('#stripe-card-element');
-    } catch (e) {
-        console.log('Stripe init failed:', e);
-        document.getElementById('stripe-card-element').style.display = 'none';
-    }
-}
-
-function processDemoPayment() {
-    const coins = selectedPackage ? selectedPackage.coins : 100;
-    addCoins(coins);
-    closePayment();
-    showNotification(`✓ Demo purchase: +${coins} coins added (no charge)`, 'success');
-}
-
-function processRealPayment() {
-    // Real payment logic here - would need backend
-    showNotification('Production payment processing requires backend setup', 'info');
+    // Re-render PayPal buttons with new amount
+    renderPayPalButtons();
 }
 
 function renderPayPalButtons() {
     const container = document.getElementById('paypal-button-container');
-    if (!container) return;
-    
-    if (typeof paypal !== 'undefined') {
-        paypal.Buttons({
-            createOrder: function(data, actions) {
-                const amount = selectedPackage ? selectedPackage.price : '0.99';
-                return actions.order.create({
-                    purchase_units: [{ amount: { value: amount } }]
-                });
-            },
-            onApprove: function(data, actions) {
-                return actions.order.capture().then(function(details) {
-                    const coins = selectedPackage ? selectedPackage.coins : 100;
-                    addCoins(coins);
-                    closePayment();
-                    showNotification(`✓ Payment successful! +${coins} coins`, 'success');
-                });
-            }
-        }).render(container);
+    if (!container || typeof paypal === 'undefined') {
+        console.error('PayPal SDK not loaded');
+        return;
     }
+    
+    // Clear existing buttons
+    container.innerHTML = '';
+    
+    // Render new PayPal buttons
+    paypal.Buttons({
+        style: {
+            layout: 'vertical',
+            color: 'gold',
+            shape: 'rect',
+            label: 'paypal'
+        },
+        createOrder: function(data, actions) {
+            const amount = selectedPackage ? selectedPackage.price.toFixed(2) : '0.99';
+            return actions.order.create({
+                purchase_units: [{
+                    amount: {
+                        currency_code: 'USD',
+                        value: amount
+                    },
+                    description: `${selectedPackage?.coins || 100} GameHub Coins`
+                }]
+            });
+        },
+        onApprove: function(data, actions) {
+            return actions.order.capture().then(function(details) {
+                const coins = selectedPackage ? selectedPackage.coins : 100;
+                addCoins(coins);
+                closePayment();
+                showNotification(`✓ Payment successful! +${coins} coins`, 'success');
+                
+                // Log for debugging
+                console.log('Payment completed:', details);
+            });
+        },
+        onError: function(err) {
+            console.error('PayPal error:', err);
+            showNotification('Payment failed. Please try again.', 'error');
+        },
+        onCancel: function() {
+            console.log('Payment cancelled by user');
+        }
+    }).render(container);
+    
+    paypalButtonsRendered = true;
 }
 
 // Initialize
