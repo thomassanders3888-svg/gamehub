@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameHub - Play Free Games</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2868508772018395" crossorigin="anonymous"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">🎮 GameHub</div>
+        <div class="nav-right">
+            <div class="coins">
+                <span class="coin-icon">🪙</span>
+                <span id="coin-count">0</span>
+            </div>
+            <button id="buy-coins" class="btn-premium">Buy Coins</button>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <h1>Free Arcade Games</h1>
+        <p>Play classic games, earn coins, unlock premium features</p>
+        <div class="stats">
+            <div><span id="games-played">0</span> Games Played</div>
+            <div><span id="total-score">0</span> Total Score</div>
+        </div>
+    </header>
+
+    <div class="ad-banner">
+        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-2868508772018395" data-ad-slot="auto" data-ad-format="auto"></ins>
+    </div>
+
+    <main class="games-grid">
+        <div class="game-card" data-game="snake">
+            <div class="game-preview snake-preview">🐍</div>
+            <h3>Snake Classic</h3>
+            <p>Grow longer, don't hit walls!</p>
+            <div class="game-meta">
+                <span class="difficulty">Easy</span>
+                <span class="reward">+10 coins</span>
+            </div>
+            <button class="btn-play" onclick="loadGame('snake')">Play Now</button>
+        </div>
+
+        <div class="game-card" data-game="tetris">
+            <div class="game-preview tetris-preview">🧱</div>
+            <h3>Block Drop</h3>
+            <p>Stack blocks, clear lines</p>
+            <div class="game-meta">
+                <span class="difficulty medium">Medium</span>
+                <span class="reward">+20 coins</span>
+            </div>
+            <button class="btn-play" onclick="loadGame('tetris')">Play Now</button>
+        </div>
+
+        <div class="game-card" data-game="memory">
+            <div class="game-preview memory-preview">🧠</div>
+            <h3>Memory Match</h3>
+            <p>Match pairs, test your brain</p>
+            <div class="game-meta">
+                <span class="difficulty">Easy</span>
+                <span class="reward">+15 coins</span>
+            </div>
+            <button class="btn-play" onclick="loadGame('memory')">Play Now</button>
+        </div>
+
+        <div class="game-card premium" data-game="racing">
+            <div class="game-preview racing-preview">🏎️</div>
+            <span class="premium-badge">PREMIUM</span>
+            <h3>Speed Racer</h3>
+            <p>High-speed racing action</p>
+            <div class="game-meta">
+                <span class="difficulty hard">Hard</span>
+                <span class="reward">+50 coins</span>
+            </div>
+            <button class="btn-play locked" onclick="unlockGame('racing', 100)">Unlock (100 coins)</button>
+        </div>
+    </main>
+
+    <!-- Game Modal -->
+    <div id="game-modal" class="modal">
+        <div class="modal-content game-frame">
+            <span class="close" onclick="closeGame()">&times;</span>
+            <h2 id="game-title">Game</h2>
+            <div id="game-container"></div>
+            <div class="game-controls">
+                <button onclick="restartGame()">Restart</button>
+                <button onclick="closeGame()">Quit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PayPal Modal -->
+    <div id="paypal-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePayPal()">&times;</span>
+            <h2>Buy Game Coins</h2>
+            <div class="coin-packages">
+                <div class="package" onclick="selectPackage(100, 0.99)">
+                    <div class="amount">100 coins</div>
+                    <div class="price">$0.99</div>
+                </div>
+                <div class="package popular" onclick="selectPackage(500, 3.99)">
+                    <div class="badge">POPULAR</div>
+                    <div class="amount">500 coins</div>
+                    <div class="price">$3.99</div>
+                </div>
+                <div class="package" onclick="selectPackage(2000, 9.99)">
+                    <div class="amount">2000 coins</div>
+                    <div class="price">$9.99</div>
+                </div>
+            </div>
+            <div id="paypal-button-container"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p>New games added daily | &copy; 2026 GameHub</p>
+        <p class="disclaimer">Coins are virtual currency for gameplay only</p>
+    </footer>
+
+    <script src="games/snake.js"></script>
+    <script src="games/tetris.js"></script>
+    <script src="games/memory.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

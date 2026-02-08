@@ -1,0 +1,298 @@
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --accent: #f59e0b;
+    --dark: #1f2937;
+    --light: #f3f4f6;
+    --success: #10b981;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    min-height: 100vh;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(10px);
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.coins {
+    background: rgba(255,255,255,0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.coin-icon { font-size: 1.2rem; }
+
+.btn-premium {
+    background: linear-gradient(135deg, var(--accent), #d97706);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-premium:hover { transform: scale(1.05); }
+
+.hero {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.hero h1 { font-size: 3rem; margin-bottom: 0.5rem; }
+
+.hero p { opacity: 0.8; margin-bottom: 1.5rem; }
+
+.stats {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin-top: 1rem;
+}
+
+.stats span { display: block; font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+
+.ad-banner {
+    max-width: 728px;
+    margin: 1rem auto;
+    min-height: 90px;
+}
+
+.games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.game-card {
+    background: rgba(255,255,255,0.05);
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    position: relative;
+    border: 2px solid rgba(255,255,255,0.1);
+    transition: all 0.3s;
+}
+
+.game-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary);
+}
+
+.game-card.premium { border-color: var(--accent); }
+
+.game-preview {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.premium-badge {
+    position: absolute;
+    top: -10px;
+    right: 10px;
+    background: linear-gradient(135deg, var(--accent), #d97706);
+    padding: 0.25rem 0.75rem;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.game-card h3 { margin-bottom: 0.5rem; font-size: 1.25rem; }
+
+.game-card p { opacity: 0.7; font-size: 0.9rem; margin-bottom: 1rem; }
+
+.game-meta {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+}
+
+.difficulty { color: var(--success); }
+.difficulty.medium { color: var(--accent); }
+.difficulty.hard { color: #ef4444; }
+
+.reward { color: #fbbf24; }
+
+.btn-play {
+    width: 100%;
+    padding: 0.875rem;
+    background: var(--primary);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-play:hover { background: var(--primary-dark); }
+
+.btn-play.locked {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.active { display: flex; }
+
+.modal-content {
+    background: var(--dark);
+    padding: 2rem;
+    border-radius: 16px;
+    max-width: 500px;
+    width: 90%;
+    position: relative;
+}
+
+.modal-content.game-frame {
+    max-width: 600px;
+}
+
+.close {
+    position: absolute;
+    top: 10px; right: 15px;
+    font-size: 2rem;
+    cursor: pointer;
+    color: white;
+}
+
+#game-container {
+    background: #000;
+    border-radius: 8px;
+    margin: 1rem 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+}
+
+.game-controls {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.game-controls button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* PayPal Modal */
+.coin-packages {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.package {
+    background: rgba(255,255,255,0.1);
+    padding: 1rem;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.package:hover, .package.selected {
+    background: var(--primary);
+    transform: scale(1.05);
+}
+
+.package.popular { border: 2px solid var(--accent); }
+
+.package .badge {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    padding: 0.25rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.7rem;
+}
+
+.package .amount { font-weight: 700; margin-bottom: 0.5rem; }
+.package .price { color: var(--accent); font-size: 1.25rem; font-weight: 700; }
+
+#paypal-button-container {
+    margin-top: 1rem;
+}
+
+footer {
+    text-align: center;
+    padding: 2rem;
+    opacity: 0.7;
+}
+
+footer .disclaimer { font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.5; }
+
+/* Game Canvas Styles */
+canvas {
+    border-radius: 8px;
+    display: block;
+}
+
+.game-ui {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: white;
+    font-family: monospace;
+}
+
+@media (max-width: 768px) {
+    .hero h1 { font-size: 2rem; }
+    .stats { flex-direction: column; gap: 1rem; }
+    .games-grid { grid-template-columns: 1fr; padding: 1rem; }
+    .coin-packages { grid-template-columns: 1fr; }
+}
