@@ -144,16 +144,18 @@ function unlockGame(game, cost) {
     }
 }
 
-// PayPal Modal
+// Payment Modal
 let selectedPackage = null;
+let stripe = null;
+let cardElement = null;
 
 document.getElementById('buy-coins').addEventListener('click', () => {
-    document.getElementById('paypal-modal').classList.add('active');
-    renderPayPalButtons();
+    document.getElementById('payment-modal').classList.add('active');
+    initPayment();
 });
 
-function closePayPal() {
-    document.getElementById('paypal-modal').classList.remove('active');
+function closePayment() {
+    document.getElementById('payment-modal').classList.remove('active');
 }
 
 function selectPackage(coins, price) {
@@ -162,46 +164,87 @@ function selectPackage(coins, price) {
     event.currentTarget.classList.add('selected');
 }
 
+function initPayment() {
+    const config = window.PAYMENT_CONFIG || { demoMode: true };
+    const notice = document.getElementById('demo-notice');
+    const payButton = document.getElementById('pay-button');
+    
+    if (config.demoMode) {
+        // Demo mode - show notice and set up fake payment
+        notice.style.display = 'block';
+        payButton.textContent = 'Demo Purchase (No Real Charge)';
+        payButton.onclick = processDemoPayment;
+        document.getElementById('paypal-button-container').style.display = 'none';
+        document.getElementById('stripe-card-element').style.display = 'none';
+    } else {
+        // Production mode - set up real payments
+        notice.style.display = 'none';
+        payButton.textContent = 'Complete Purchase';
+        
+        // Initialize Stripe if key provided
+        if (config.stripePublicKey && config.stripePublicKey.startsWith('pk_')) {
+            initStripe(config.stripePublicKey);
+        } else {
+            document.getElementById('stripe-card-element').style.display = 'none';
+        }
+        
+        // Initialize PayPal if desired
+        if (config.paypalClientId && config.paypalClientId !== 'sb') {
+            renderPayPalButtons();
+        } else {
+            document.getElementById('paypal-button-container').style.display = 'none';
+        }
+        
+        payButton.onclick = processRealPayment;
+    }
+}
+
+function initStripe(publicKey) {
+    try {
+        stripe = Stripe(publicKey);
+        const elements = stripe.elements();
+        cardElement = elements.create('card', { style: { base: { color: '#fff', fontSize: '16px' } } });
+        cardElement.mount('#stripe-card-element');
+    } catch (e) {
+        console.log('Stripe init failed:', e);
+        document.getElementById('stripe-card-element').style.display = 'none';
+    }
+}
+
+function processDemoPayment() {
+    const coins = selectedPackage ? selectedPackage.coins : 100;
+    addCoins(coins);
+    closePayment();
+    showNotification(`✓ Demo purchase: +${coins} coins added (no charge)`, 'success');
+}
+
+function processRealPayment() {
+    // Real payment logic here - would need backend
+    showNotification('Production payment processing requires backend setup', 'info');
+}
+
 function renderPayPalButtons() {
     const container = document.getElementById('paypal-button-container');
-    container.innerHTML = '';
+    if (!container) return;
     
-    // Check PayPal sandbox mode
     if (typeof paypal !== 'undefined') {
         paypal.Buttons({
             createOrder: function(data, actions) {
                 const amount = selectedPackage ? selectedPackage.price : '0.99';
                 return actions.order.create({
-                    purchase_units: [{
-                        amount: { value: amount }
-                    }]
+                    purchase_units: [{ amount: { value: amount } }]
                 });
             },
             onApprove: function(data, actions) {
                 return actions.order.capture().then(function(details) {
                     const coins = selectedPackage ? selectedPackage.coins : 100;
                     addCoins(coins);
-                    closePayPal();
-                    showNotification(`Payment successful! +${coins} coins`, 'success');
+                    closePayment();
+                    showNotification(`✓ Payment successful! +${coins} coins`, 'success');
                 });
-            },
-            onError: function(err) {
-                // Sandbox/demo mode - add coins anyway for testing
-                const coins = selectedPackage ? selectedPackage.coins : 100;
-                addCoins(coins);
-                closePayPal();
-                showNotification(`Demo mode: +${coins} coins added`, 'info');
             }
         }).render(container);
-    } else {
-        // Fallback for no PayPal SDK
-        container.innerHTML = '<button onclick="demoPurchase()">Demo Purchase (Add 100 Coins)</button>';
     }
-}
-
-function demoPurchase() {
-    addCoins(100);
-    closePayPal();
 }
 
 // Initialize

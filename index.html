@@ -5,7 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GameHub - Play Free Games</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        // Payment config - Load from environment or use demo mode
+        window.PAYMENT_CONFIG = {
+            demoMode: true, // Set to false when Stripe keys are configured
+            stripePublicKey: 'pk_test_demo', // Replace with real pk_live_... key
+            paypalClientId: 'sb' // Replace with real PayPal client ID
+        };
+    </script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2868508772018395" crossorigin="anonymous"></script>
 </head>
 <body>
@@ -93,11 +101,11 @@
         </div>
     </div>
 
-    <!-- PayPal Modal -->
-    <div id="paypal-modal" class="modal">
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closePayPal()">&times;</span>
-            <h2>Buy Game Coins</h2>
+            <span class="close" onclick="closePayment()">&times;</span>
+            <h2>💰 Buy Game Coins</h2>
             <div class="coin-packages">
                 <div class="package" onclick="selectPackage(100, 0.99)">
                     <div class="amount">100 coins</div>
@@ -113,7 +121,16 @@
                     <div class="price">$9.99</div>
                 </div>
             </div>
-            <div id="paypal-button-container"></div>
+            <div id="payment-methods">
+                <div id="demo-notice" class="demo-banner">
+                    ⚠️ DEMO MODE - Add your payment keys to enable real transactions
+                </div>
+                <div id="stripe-card-element"></div>
+                <button id="pay-button" class="btn-premium" style="width:100%;margin-top:1rem;">
+                    Complete Purchase
+                </button>
+                <div id="paypal-button-container" style="margin-top:1rem;"></div>
+            </div>
         </div>
     </div>
 

@@ -276,6 +276,36 @@ footer {
 
 footer .disclaimer { font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.5; }
 
+/* Payment Demo Mode */
+.demo-banner {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+#stripe-card-element {
+    background: rgba(255,255,255,0.1);
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+.package.selected {
+    background: var(--primary);
+    border: 2px solid white;
+}
+
+@media (max-width: 768px) {
+    .hero h1 { font-size: 2rem; }
+    .stats { flex-direction: column; gap: 1rem; }
+    .games-grid { grid-template-columns: 1fr; padding: 1rem; }
+    .coin-packages { grid-template-columns: 1fr; }
+}
+
 /* Game Canvas Styles */
 canvas {
     border-radius: 8px;
